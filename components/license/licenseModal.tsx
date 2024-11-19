@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PublicBeat } from "@/types";
+import Link from "next/link";
 
 interface LicenseModalProps {
   beat: PublicBeat;
@@ -143,9 +144,12 @@ export default function LicenseModal({
                       ))}
                     </div>
 
-                    <span className="text-sm underline cursor-pointer">
+                    <Link
+                      href={`/licenses/#${license.name.toLowerCase()}`}
+                      className="text-sm underline cursor-pointer"
+                    >
                       View license
-                    </span>
+                    </Link>
 
                     <div className="absolute bottom-6 right-6 h-6 w-6 rounded-sm border">
                       {isSelected && (

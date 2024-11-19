@@ -38,7 +38,7 @@ export default function Header() {
                 <Menu className="h-6 w-6" />
               )}
             </motion.button>
-            <Link href="/public" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2">
               <Image
                 src={logoImage}
                 alt="Cheapbeats logo"
