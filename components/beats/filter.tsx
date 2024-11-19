@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
-import debounce from "lodash/debounce";
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useFilterStore } from "@/providers/store-provider";
 import type { FilterState } from "@/store/filter";
+import Image from "next/image";
 
 interface Genre {
   name: string;
@@ -42,7 +40,6 @@ const licenseTypes = [
 ];
 
 export default function FilterSearch() {
-  const router = useRouter();
   const {
     search,
     genre,
@@ -58,10 +55,10 @@ export default function FilterSearch() {
   const [isGenreOpen, setIsGenreOpen] = useState(false);
 
   const debouncedSearch = useCallback(
-    debounce((value: string) => {
+    (value: string) => {
       setSearch(value);
-    }, 300),
-    []
+    },
+    [setSearch]
   );
 
   const handleSearchChange = (value: string) => {

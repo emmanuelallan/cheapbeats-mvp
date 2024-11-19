@@ -80,7 +80,7 @@ export const BeatsList = () => {
     fetchNextPage,
     flatBeats.length,
     isFetchingNextPage,
-    rowVirtualizer.getVirtualItems(),
+    rowVirtualizer,
   ]);
 
   if (isLoading)

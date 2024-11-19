@@ -6,18 +6,10 @@ import { PublicBeat } from "@/types/index";
 import Image from "next/image";
 import { Play, Pause, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Beat } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import LicenseModal from "../license/licenseModal";
 
-export const BeatListItem = ({
-  beat,
-  index,
-}: {
-  beat: PublicBeat;
-  index: number;
-}) => {
+export const BeatListItem = ({ beat }: { beat: PublicBeat; index: number }) => {
   const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
   const { queue, currentTrack, isPlaying, setCurrentTrack, setIsPlaying } =
     usePlayerStore();

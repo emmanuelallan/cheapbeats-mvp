@@ -201,7 +201,7 @@ export function CreateBeatForm({ onSuccess }: { onSuccess: () => void }) {
     handleSubmit,
     control,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(createBeatSchema),
     mode: "onBlur",

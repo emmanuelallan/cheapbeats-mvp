@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { EditBeatForm } from "./editBeatForm";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { formatDistance } from "date-fns";
+// import { formatDistance } from "date-fns";
 import { Beat } from "@prisma/client";
 import {
   AlertDialog,
@@ -202,7 +202,7 @@ export function BeatTable({ initialBeats }: BeatTableProps) {
           {editingBeat && (
             <EditBeatForm
               beat={editingBeat}
-              onSuccess={async (updatedBeat: Beat) => {
+              onSuccess={async () => {
                 await queryClient.invalidateQueries({ queryKey: ["beats"] });
                 setEditingBeat(null);
                 toast({
