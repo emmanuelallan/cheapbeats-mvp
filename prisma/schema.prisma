@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Beat {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  beatNumber    String  @unique
+  coverImageUrl String
+  previewMp3Url String
+  wavUrl        String
+  stemsUrl      String?
+  midiUrl       String?
+
+  bpm       Int
+  key       String
+  genres    String
+  tags      String[]
+  trackType String
+  duration  Int
+
+  nonExclusivePrice Float
+  exclusivePrice    Float
+  buyoutPrice      Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases    Purchase[]
+  isActive    Boolean    @default(true)
+}
+
+enum LicenseType {
+  NON_EXCLUSIVE
+  EXCLUSIVE
+  BUYOUT
+}
+
+model Purchase {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  beat          Beat     @relation(fields: [beatId], references: [id])
+  beatId        String   @db.ObjectId
+  licenseType   LicenseType
+  addons        PurchaseAddon[]
+  
+  customerEmail String
+  downloadToken String    @unique
+  expiresAt     DateTime
+  purchasedAt   DateTime  @default(now())
+  amount        Float
+  transactionId String?
+  isDownloaded  Boolean   @default(false)
+}
+
+enum AddonType {
+  STEMS
+  MIDI
+}
+
+// Junction table for Purchase and Addons
+model PurchaseAddon {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  purchase    Purchase  @relation(fields: [purchaseId], references: [id])
+  purchaseId  String    @db.ObjectId
+  type        AddonType
+  price       Float
+  downloadUrl String
+
+  @@unique([purchaseId, type])
+}
+
+model OtpVerification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  otp       String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+}
+
+// Extend the default NextAuth models
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@unique([provider, providerAccountId])
+}
+ 
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  role          UserRole  @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  PRODUCER
+}
+
+model License {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  basePrice   Float
+  rights      String[]
+  allowsStems Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Addon {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  type        String
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
