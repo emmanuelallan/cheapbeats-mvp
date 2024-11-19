@@ -1,3 +1,5 @@
+import type { JWTPayload } from "jose";
+
 export interface Beat {
   id: string;
   title: string;
@@ -99,3 +101,27 @@ export interface PurchaseAddon {
   price: number;
   downloadUrl: string;
 }
+
+export interface OtpVerification {
+  id: string;
+  email: string;
+  otp: string;
+  createdAt: Date;
+  expiresAt: Date;
+  verified: boolean;
+}
+
+export interface OtpResponse {
+  success?: boolean;
+  error?: string;
+}
+
+export interface SessionPayload extends JWTPayload {
+  email: string;
+  expiresAt: string;
+}
+
+export type ServerActionResponse<T> = Promise<{
+  success?: T;
+  error?: string;
+}>;

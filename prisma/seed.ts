@@ -4,8 +4,18 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Clear existing data
+  await prisma.user.deleteMany();
   await prisma.license.deleteMany();
   await prisma.addon.deleteMany();
+
+  // Create Admin User
+  const admin = await prisma.user.create({
+    data: {
+      email: process.env.ADMIN_EMAIL || "admin@example.com",
+      role: "ADMIN",
+      emailVerified: new Date(),
+    },
+  });
 
   // Create Licenses
   const licenses = await Promise.all([
@@ -83,7 +93,7 @@ async function main() {
     }),
   ]);
 
-  console.log({ licenses, addons });
+  console.log({ admin, licenses, addons });
 }
 
 main()
