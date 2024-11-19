@@ -1,5 +1,26 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import localFont from "next/font/local";
+
+const productSans = localFont({
+  src: [
+    {
+      path: "../assets/fonts/ProductSans-Regular.woff",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../assets/fonts/ProductSans-Bold.woff",
+      weight: "700",
+      style: "bold",
+    },
+    {
+      path: "../assets/fonts/ProductSans-Medium.woff",
+      weight: "500",
+      style: "medium",
+    },
+  ],
+});
 
 // components
 import Header from "@/components/layout/header";
@@ -20,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`${productSans.className} antialiased`}>
         <Header />
         <QueryProvider>
           <StoreProvider>
