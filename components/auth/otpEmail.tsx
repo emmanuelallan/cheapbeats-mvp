@@ -120,7 +120,7 @@ const code = {
 
 const paragraph = {
   color: "#444",
-  fontSize: "15px",
+  fontSize: "12px",
   fontFamily: "HelveticaNeue,Helvetica,Arial,sans-serif",
   letterSpacing: "0",
   lineHeight: "23px",
