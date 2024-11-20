@@ -5,16 +5,18 @@ import { getLicenses } from "@/actions/licenses";
 import { getAddons } from "@/actions/addons";
 import { createCheckout } from "@/actions/checkout";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { PublicBeat } from "@/types";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 interface LicenseModalProps {
   beat: PublicBeat;
@@ -26,7 +28,7 @@ export default function LicenseModal({
   beat,
   open,
   onClose,
-}: Omit<LicenseModalProps, "licenses" | "addons">) {
+}: LicenseModalProps) {
   const { data: licenses = [] } = useQuery({
     queryKey: ["licenses"],
     queryFn: getLicenses,
@@ -44,21 +46,16 @@ export default function LicenseModal({
 
   const handleCheckout = async () => {
     try {
-      console.log("Selected license:", selectedLicense);
-      console.log("Selected beat:", beat.id);
-      console.log("Selected addons:", selectedAddons);
       const result = await createCheckout({
         beatId: beat.id,
         licenseId: selectedLicense,
         addonIds: selectedAddons,
       });
 
-      console.log("Checkout result:", result);
-
       window.location.href = result.checkoutUrl;
     } catch (error) {
       console.error("Checkout error:", error);
-      // Add error handling UI here
+      // TODO: Add error handling UI here
     }
   };
 
@@ -72,41 +69,51 @@ export default function LicenseModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl p-0 gap-0">
-        <DialogHeader className="p-6 pb-0">
-          <div className="flex items-center justify-between">
-            <div>
+      <DialogContent className="max-w-4xl p-0 gap-0 max-h-[90vh] overflow-auto">
+        <DialogHeader className="sticky top-0 z-10 bg-background p-6 pb-0 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
               <DialogTitle className="text-2xl capitalize">
                 {beat.title}
               </DialogTitle>
-              <div className="flex gap-2 mt-1 text-sm text-muted-foreground items-center">
+              <div className="flex flex-wrap gap-2 mt-1 text-sm text-muted-foreground items-center">
                 <Button variant="link" className="hover:underline p-0" asChild>
-                  <a
-                    href={`/licenses`}
+                  <Link
+                    href="/licenses"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
                     View Licenses
-                  </a>
+                  </Link>
                 </Button>
-                <span>/</span>
+                <span className="hidden sm:inline">/</span>
                 <Button variant="link" className="hover:underline p-0" asChild>
-                  <a href={`/faq`} target="_blank" rel="noreferrer noopener">
+                  <Link href="/faq" target="_blank" rel="noreferrer noopener">
                     View FAQ
-                  </a>
+                  </Link>
                 </Button>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm">
-                CHECKOUT: <span className="font-semibold">${totalPrice()}</span>
-              </div>
+            <DialogClose asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
+          </div>
+          <div className="flex items-center justify-end mt-4">
+            <div className="text-sm">
+              CHECKOUT: <span className="font-semibold">${totalPrice()}</span>
             </div>
           </div>
         </DialogHeader>
 
         <div className="p-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {licenses.map((license) => {
               const isSelected = selectedLicense === license.id;
 
@@ -114,11 +121,12 @@ export default function LicenseModal({
                 <button
                   key={license.id}
                   onClick={() => setSelectedLicense(license.id)}
-                  className={`relative rounded-2xl border p-6 text-center transition-all hover:border-[#40F4C7]  ${
+                  className={cn(
+                    "relative rounded-2xl border p-6 text-center transition-all hover:border-[#40F4C7]",
                     isSelected
                       ? "bg-[#f2fffe] border-[#40F4C7]"
                       : "bg-white border-border"
-                  }`}
+                  )}
                 >
                   <div className="space-y-4">
                     <div>
@@ -182,13 +190,14 @@ export default function LicenseModal({
                         setSelectedAddons([...selectedAddons, addon.id]);
                       }
                     }}
-                    className={`w-full text-left rounded-lg border p-4 transition-all hover:border-primary ${
+                    className={cn(
+                      "w-full text-left rounded-lg border p-4 transition-all hover:border-primary",
                       isSelected ? "border-primary" : "border-border"
-                    }`}
+                    )}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-start gap-4">
-                        <div className="h-5 w-5 rounded-sm border mt-0.5">
+                        <div className="h-5 w-5 rounded-sm border mt-0.5 flex-shrink-0">
                           {isSelected && (
                             <div className="flex h-full items-center justify-center">
                               <div className="h-3 w-3 rounded-sm bg-black" />
@@ -204,7 +213,9 @@ export default function LicenseModal({
                           </p>
                         </div>
                       </div>
-                      <div className="text-sm font-medium">${addon.price}</div>
+                      <div className="text-sm font-medium ml-2">
+                        ${addon.price}
+                      </div>
                     </div>
                   </button>
                 );
@@ -212,7 +223,7 @@ export default function LicenseModal({
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 sticky bottom-0 bg-background py-4 shadow-md">
             <Button className="w-full" size="lg" onClick={handleCheckout}>
               Proceed to Checkout (${totalPrice()})
             </Button>

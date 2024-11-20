@@ -97,6 +97,26 @@ body {
       rgb(12, 27, 43) 100%
     );
   }
+
+  .list-grid {
+    grid-template-columns: 16px repeat(3, minmax(0, max-content)) 12px;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      ". item-title item-title item-title ."
+      ". item-subtitle extra-info . .";
+  }
+
+  .item-title {
+    grid-area: item-title;
+  }
+
+  .item-subtitle {
+    grid-area: item-subtitle;
+  }
+
+  .extra-info {
+    grid-area: extra-info;
+  }
 }
 
 .loading {
