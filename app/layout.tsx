@@ -28,7 +28,6 @@ import { StoreProvider } from "@/providers/store-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/toaster";
 import Player from "@/components/beats/player";
-
 export const metadata: Metadata = {
   title: "Cheapbeats",
   description: "Buy cheap beats",

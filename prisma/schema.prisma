@@ -38,6 +38,7 @@ model Beat {
   updatedAt DateTime @updatedAt
 
   purchases    Purchase[]
+  orders      Order[]
   isActive    Boolean    @default(true)
 }
 
@@ -53,6 +54,8 @@ model Purchase {
   beatId        String   @db.ObjectId
   licenseType   LicenseType
   addons        PurchaseAddon[]
+  order         Order    @relation(fields: [orderId], references: [id])
+  orderId       String   @db.ObjectId @unique
   
   customerEmail String
   downloadToken String    @unique
@@ -170,4 +173,25 @@ model Waitlist {
   id      String    @id @default(auto()) @map("_id") @db.ObjectId
   email   String    @unique
   createdAt DateTime  @default(now())
+}
+
+model Order {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  paypalOrderId String   @unique
+  beatId        String   @db.ObjectId
+  beat          Beat     @relation(fields: [beatId], references: [id])
+  licenseType   LicenseType
+  amount        Float
+  status        OrderStatus
+  customerEmail String
+  addons        String[] // Array of addon types (STEMS, MIDI)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  purchase      Purchase?
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }
