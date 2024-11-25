@@ -45,7 +45,7 @@ export default function Hero() {
             </div>
 
             <div className="max-w-[768px] w-full mx-auto z-10">
-              <div className="py-[72px] flex flex-col place-content-center items-center text-center whitespace-normal mx-auto w-full px-3">
+              <div className="pt-[160px] pb-[80px] flex flex-col place-content-center items-center text-center whitespace-normal mx-auto w-full px-3">
                 <h1 className="text-4xl md:text-6xl font-bold leading-tight text-background mt-0 mb-6">
                   Unlock the Perfect Sound for Your Next Hit
                 </h1>

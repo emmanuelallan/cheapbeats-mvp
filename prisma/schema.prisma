@@ -148,7 +148,7 @@ enum UserRole {
 
 model License {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
+  name        LicenseType
   description String
   basePrice   Float
   rights      String[]

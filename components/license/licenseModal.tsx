@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getLicenses } from "@/actions/licenses";
 import { getAddons } from "@/actions/addons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,6 +32,8 @@ export default function LicenseModal({
   const { data: licenses = [] } = useQuery({
     queryKey: ["licenses"],
     queryFn: getLicenses,
+    retry: 1,
+    staleTime: 1000 * 60 * 5,
   });
 
   const { data: addons = [] } = useQuery({
@@ -39,11 +41,20 @@ export default function LicenseModal({
     queryFn: getAddons,
   });
 
-  const [selectedLicense, setSelectedLicense] = useState<string>(
-    licenses[0]?.id
-  );
+  const [selectedLicense, setSelectedLicense] = useState<string>();
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (licenses.length > 0 && !selectedLicense) {
+      setSelectedLicense(licenses[0].id);
+    }
+  }, [licenses, selectedLicense]);
+
+  useEffect(() => {
+    console.log("Selected License:", selectedLicense);
+    console.log("Available Licenses:", licenses);
+  }, [selectedLicense, licenses]);
 
   const totalPrice = () => {
     const license = licenses.find((l) => l.id === selectedLicense);
@@ -59,6 +70,13 @@ export default function LicenseModal({
 
   const createOrder = async () => {
     try {
+      console.log("Creating order with:", {
+        beatId: beat.id,
+        licenseId: selectedLicense,
+        addonIds: selectedAddons,
+        amount: totalPrice(),
+      });
+
       const response = await fetch("/api/create-paypal-order", {
         method: "POST",
         headers: {
@@ -72,12 +90,17 @@ export default function LicenseModal({
         }),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Error response:", errorData);
         throw new Error(errorData.error || "Failed to create PayPal order");
       }
 
       const orderData = await response.json();
+      console.log("Order data:", orderData);
+
       if (orderData.id) {
         return orderData.id;
       } else {

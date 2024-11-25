@@ -1,25 +1,44 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createPayPalOrder } from "@/lib/paypal";
-import { LicenseType } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 
 export async function POST(request: Request) {
   try {
-    const { beatId, licenseId, addonIds, amount } = await request.json();
+    const body = await request.json();
+    const { beatId, licenseId, addonIds, amount } = body;
 
-    if (
-      !beatId ||
-      !licenseId ||
-      !Array.isArray(addonIds) ||
-      typeof amount !== "number"
-    ) {
+    // Validate all required fields
+    if (!beatId || typeof beatId !== "string") {
       return NextResponse.json(
-        { error: "Invalid input data" },
+        { error: "Invalid beat ID" },
         { status: 400 }
       );
     }
 
-    // Fetch the beat to ensure it exists and is active
+    if (!licenseId || typeof licenseId !== "string") {
+      console.log('Invalid license ID:', licenseId);
+      return NextResponse.json(
+        { error: "Invalid license ID" },
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(addonIds)) {
+      return NextResponse.json(
+        { error: "Invalid addons data" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof amount !== "number" || amount <= 0) {
+      return NextResponse.json(
+        { error: "Invalid amount" },
+        { status: 400 }
+      );
+    }
+
+    // Fetch and validate beat
     const beat = await prisma.beat.findUnique({
       where: { id: beatId, isActive: true },
     });
@@ -31,7 +50,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch the license to ensure it exists and is active
+    // Fetch and validate license to get the name
     const license = await prisma.license.findUnique({
       where: { id: licenseId, isActive: true },
     });
@@ -43,47 +62,39 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch and validate addons
-    const addons = await prisma.addon.findMany({
-      where: { id: { in: addonIds }, isActive: true },
+    // The license.name is already a LicenseType enum value from the database
+    // so we don't need to map it
+    const licenseType = license.name;
+
+    // Remove the mapping code and validation
+    // Just log for debugging
+    console.log({
+      licenseId,
+      licenseName: license.name,
+      licenseType,
     });
 
-    if (addons.length !== addonIds.length) {
-      return NextResponse.json(
-        { error: "One or more addons not found or inactive" },
-        { status: 404 }
-      );
-    }
+    // Create PayPal order first
+    const paypalOrder = await createPayPalOrder(amount);
 
-    // Calculate total amount
-    const calculatedAmount =
-      license.basePrice + addons.reduce((sum, addon) => sum + addon.price, 0);
-
-    // Verify the amount matches what the client sent
-    if (Math.abs(calculatedAmount - amount) > 0.01) {
-      // Allow for small floating-point discrepancies
-      return NextResponse.json({ error: "Amount mismatch" }, { status: 400 });
-    }
-
-    // Create PayPal order
-    const paypalOrder = await createPayPalOrder(calculatedAmount);
-
-    // Store the order details in your database
+    // Store order details
     const order = await prisma.order.create({
       data: {
         paypalOrderId: paypalOrder.id,
         beatId: beat.id,
-        licenseType: license.name as LicenseType,
-        amount: calculatedAmount,
-        status: "PENDING",
-        customerEmail: "", // This will be filled when the order is captured
-        addons: addons.map((addon) => addon.type),
+        licenseType,
+        amount,
+        status: OrderStatus.PENDING,
+        customerEmail: "", // Will be updated after capture
+        addons: addonIds,
       },
     });
 
-    return NextResponse.json({ id: paypalOrder.id, orderId: order.id });
+    return NextResponse.json({
+      id: paypalOrder.id,
+      orderId: order.id,
+    });
   } catch (error) {
-    console.error("Error creating PayPal order:", error);
     return NextResponse.json(
       { error: "Failed to create order" },
       { status: 500 }

@@ -11,8 +11,17 @@ export async function getLicenses() {
       orderBy: {
         basePrice: "asc",
       },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        basePrice: true,
+        rights: true,
+        allowsStems: true,
+      },
     });
 
+    console.log('Fetched licenses:', licenses);
     return licenses;
   } catch (error) {
     console.error("Error fetching licenses:", error);
